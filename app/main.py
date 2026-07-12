@@ -6,6 +6,10 @@ from sqlalchemy import text
 from app.config import settings
 from app.database import engine
 
+from app.api.routes import router
+
+app.include_router(router)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +42,8 @@ app = FastAPI(
     version=settings.app_version,
     lifespan=lifespan
 )
+
+
 
 
 @app.get("/")
