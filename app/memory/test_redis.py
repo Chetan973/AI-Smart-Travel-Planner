@@ -1,12 +1,24 @@
-from app.memory.redis_client import redis_client
+import redis
+
+from app.config import settings
 
 
-def test():
+def test_redis():
 
-    redis_client.set("project", "AI Smart Travel Planner")
+    client = redis.from_url(settings.redis_url)
 
-    print(redis_client.get("project"))
+    client.set(
+        "project",
+        "AI Smart Travel Planner"
+    )
+
+    value = client.get("project")
+
+    print("=" * 50)
+    print("Redis Connected Successfully")
+    print("Stored Value :", value.decode())
+    print("=" * 50)
 
 
 if __name__ == "__main__":
-    test()
+    test_redis()

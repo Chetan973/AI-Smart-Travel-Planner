@@ -3,22 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.api.routes import router
 from app.config import settings
 from app.database import engine
-
-from app.api.routes import router
-
-app.include_router(router)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Startup and Shutdown Events
-    """
 
     print("=" * 60)
-    print(f"{settings.app_name}")
+    print(settings.app_name)
     print("=" * 60)
 
     try:
@@ -43,7 +37,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-
+# Register API Routes
+app.include_router(router)
 
 
 @app.get("/")

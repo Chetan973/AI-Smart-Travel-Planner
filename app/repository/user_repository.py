@@ -30,3 +30,15 @@ class UserRepository:
         db.refresh(user)
 
         return user
+    
+    @staticmethod
+    def update(
+        db: Session,
+        user: User
+    ) -> User:
+
+        db.commit()
+
+        db.refresh(user)
+
+        return user

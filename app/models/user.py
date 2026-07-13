@@ -22,7 +22,7 @@ class User(Base):
 
     email = Column(String(120), unique=True, nullable=False, index=True)
 
-    mobile_no = Column(String(15), unique=True)
+    mobile_no = Column(String(15), nullable=True)
 
     email_verified = Column(Boolean, default=False)
 

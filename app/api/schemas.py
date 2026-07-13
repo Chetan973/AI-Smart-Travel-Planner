@@ -3,7 +3,7 @@ from pydantic import EmailStr
 from pydantic import Field
 
 
-class UserRegistrationRequest(BaseModel):
+class UserInitializationRequest(BaseModel):
 
     full_name: str = Field(
         min_length=3,
@@ -18,7 +18,7 @@ class UserRegistrationRequest(BaseModel):
     )
 
 
-class UserResponse(BaseModel):
+class UserInitializationResponse(BaseModel):
 
     user_id: int
 
@@ -33,3 +33,19 @@ class UserResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class VerifyOTPRequest(BaseModel):
+
+    email: EmailStr
+
+    otp: str = Field(
+        min_length=6,
+        max_length=6
+    )
+
+
+class VerifyOTPResponse(BaseModel):
+
+    message: str
+
+    email_verified: bool

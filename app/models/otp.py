@@ -13,7 +13,10 @@ class OTP(Base):
 
     __tablename__ = "email_otps"
 
-    otp_id = Column(Integer, primary_key=True)
+    otp_id = Column(
+        Integer,
+        primary_key=True
+    )
 
     user_id = Column(
         Integer,
@@ -21,11 +24,35 @@ class OTP(Base):
         nullable=False
     )
 
-    email = Column(String(120))
+    email = Column(
+        String(120),
+        nullable=False
+    )
 
-    otp = Column(String(6))
+    otp = Column(
+        String(6),
+        nullable=False
+    )
 
-    verified = Column(Boolean, default=False)
+    verified = Column(
+        Boolean,
+        default=False
+    )
+
+    attempt_count = Column(
+        Integer,
+        default=0
+    )
+
+    expires_at = Column(
+        DateTime(timezone=True),
+        nullable=False
+    )
+
+    verified_at = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
 
     created_at = Column(
         DateTime(timezone=True),
