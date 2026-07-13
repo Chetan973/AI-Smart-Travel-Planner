@@ -4,17 +4,44 @@ from langgraph.graph import StateGraph
 
 from app.graph.checkpoints.redis_checkpointer import GraphCheckpointer
 from app.graph.nodes.ai_node import AINode
+from app.graph.nodes.provider_node import ProviderNode
 from app.graph.nodes.travel_node import TravelNode
 from app.graph.nodes.user_node import UserNode
 from app.graph.state.travel_state import TravelState
 
 
 class GraphBuilder:
+    """
+    Builds and compiles the LangGraph workflow.
+
+    Workflow
+
+        START
+          │
+          ▼
+    Initialize User
+          │
+          ▼
+    Validate Travel Request
+          │
+          ▼
+    AI Recommendation
+          │
+          ▼
+    Provider Search
+          │
+          ▼
+          END
+    """
 
     @staticmethod
     def build():
 
         graph = StateGraph(TravelState)
+
+        # =====================================================
+        # Register Nodes
+        # =====================================================
 
         graph.add_node(
             "initialize_user",
@@ -30,6 +57,15 @@ class GraphBuilder:
             "ai_recommendation",
             AINode.recommend
         )
+
+        graph.add_node(
+            "provider_search",
+            ProviderNode.search
+        )
+
+        # =====================================================
+        # Graph Flow
+        # =====================================================
 
         graph.add_edge(
             START,
@@ -48,8 +84,17 @@ class GraphBuilder:
 
         graph.add_edge(
             "ai_recommendation",
+            "provider_search"
+        )
+
+        graph.add_edge(
+            "provider_search",
             END
         )
+
+        # =====================================================
+        # Compile Graph
+        # =====================================================
 
         return graph.compile(
             checkpointer=GraphCheckpointer.get_checkpointer()

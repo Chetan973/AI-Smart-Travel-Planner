@@ -1,45 +1,101 @@
+from datetime import date
+
 from app.enums.travel_mode import TravelMode
 from app.graph.state.travel_state import TravelState
 from app.graph.workflow import travel_graph
 
+# =====================================================
+# Initial State
+# =====================================================
 
-def test():
+state = TravelState(
 
-    state = TravelState(
+    session_id="travel-session-001",
 
-        user_id=1,
+    user_id=1,
 
-        full_name="Chetan",
+    full_name="Chetan",
 
-        email="chetan@gmail.com",
+    email="chetan@gmail.com",
 
-        source="Bangalore",
+    mobile_no="9876543210",
 
-        destination="Shimoga",
+    source="Bangalore",
 
-        travel_mode=TravelMode.TRAIN,
+    destination="Shimoga",
 
-        passengers=2
+    journey_date=date(2026, 7, 15),
 
-    )
+    travel_mode=TravelMode.TRAIN,
 
-    result = travel_graph.invoke(
-        state,
-        config={
-            "configurable": {
-                "thread_id": "travel-session-001"
-            }
-        }
-    )
+    passengers=2
 
-    print()
+)
 
-    print("=" * 60)
+# =====================================================
+# LangGraph Config
+# =====================================================
 
-    print(result)
+config = {
 
-    print("=" * 60)
+    "configurable": {
 
+        "thread_id": state.session_id
 
-if __name__ == "__main__":
-    test()
+    }
+
+}
+
+# =====================================================
+# Execute Graph
+# =====================================================
+
+result = travel_graph.invoke(
+
+    state,
+
+    config=config
+
+)
+
+# =====================================================
+# Convert Dict -> TravelState
+# =====================================================
+
+result = TravelState.model_validate(result)
+
+# =====================================================
+# Output
+# =====================================================
+
+print()
+
+print("=" * 60)
+print("AI Recommendation")
+print("=" * 60)
+
+print(result.ai_response)
+
+print()
+
+print("=" * 60)
+print("Provider")
+print("=" * 60)
+
+print(result.provider)
+
+print()
+
+print("=" * 60)
+print("Travel Options")
+print("=" * 60)
+
+for option in result.travel_options:
+
+    print(option)
+
+print()
+
+print("=" * 60)
+print("Workflow Completed")
+print("=" * 60)
