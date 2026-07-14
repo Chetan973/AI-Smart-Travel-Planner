@@ -1,5 +1,8 @@
+from httpx import options
+
 from app.graph.state.travel_state import TravelState
 from app.providers.provider_factory import ProviderFactory
+from app.memory.travel_memory import TravelMemory
 
 
 class ProviderNode:
@@ -46,18 +49,19 @@ class ProviderNode:
             journey_date=str(state.journey_date)
 
         )
+        state.travel_options = []
 
         if options:
 
             state.provider = options[0].provider
 
-            state.travel_options = [
+            for index, option in enumerate(options, start=1):
 
-                option.model_dump()
+                item = option.model_dump()
 
-                for option in options
+                item["option_id"] = index
 
-            ]
+                state.travel_options.append(item)
 
             print(f"Provider : {state.provider}")
 
@@ -67,8 +71,7 @@ class ProviderNode:
 
             state.provider = None
 
-            state.travel_options = []
-
             print("No travel options found.")
+        TravelMemory.save(state)
 
         return state

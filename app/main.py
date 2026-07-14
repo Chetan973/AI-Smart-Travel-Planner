@@ -5,6 +5,9 @@ from sqlalchemy import text
 
 from app.api.routes import router as user_router
 from app.api.travel_routes import router as travel_router
+from app.api.booking_routes import router as booking_router
+from app.api.payment_routes import router as payment_router
+from app.api.view_routes import router as view_router
 from app.config import settings
 from app.database import engine
 
@@ -51,6 +54,11 @@ app.include_router(user_router)
 # Travel APIs
 app.include_router(travel_router)
 
+# Booking APIs
+app.include_router(booking_router)
+
+app.include_router(payment_router)
+app.include_router(view_router)
 
 # =====================================================
 # Home API

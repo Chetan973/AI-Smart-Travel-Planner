@@ -8,6 +8,7 @@ class TravelOption(BaseModel):
     """
     Common DTO returned by all travel providers.
     """
+    option_id: int | None = None
 
     provider: str
 
