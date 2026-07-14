@@ -102,7 +102,11 @@ class TravelState(BaseModel):
 
     provider: str | None = None
 
+    provider_reference: str | None = None
+
     travel_options: list[dict[str, Any]] = Field(default_factory=list)
+
+    selected_option_id: int | None = None
 
     selected_option: dict[str, Any] = Field(default_factory=dict)
 
@@ -114,6 +118,8 @@ class TravelState(BaseModel):
 
     booking_id: str | None = None
 
+    booking_reference: str | None = None
+
     # =====================================================
     # Payment
     # =====================================================
@@ -121,6 +127,12 @@ class TravelState(BaseModel):
     payment_status: PaymentStatus = PaymentStatus.PENDING
 
     payment_id: str | None = None
+
+    payment_reference: str | None = None
+
+    payment_url: str | None = None
+
+    payment_completed: bool = False
 
     # =====================================================
     # Conversation Memory

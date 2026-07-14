@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>AI Smart Travel Planner - Payment</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+
+        body{
+
+            font-family:Arial, Helvetica, sans-serif;
+
+            background:#f2f6fb;
+
+            margin:40px;
+
+        }
+
+        .container{
+
+            max-width:650px;
+
+            margin:auto;
+
+            background:white;
+
+            padding:30px;
+
+            border-radius:12px;
+
+            box-shadow:0 0 15px rgba(0,0,0,.15);
+
+        }
+
+        h2{
+
+            color:#0b5ed7;
+
+            text-align:center;
+
+        }
+
+        .info{
+
+            margin-top:20px;
+
+            line-height:2;
+
+            font-size:16px;
+
+        }
+
+        button{
+
+            width:100%;
+
+            margin-top:30px;
+
+            padding:15px;
+
+            border:none;
+
+            background:#0b5ed7;
+
+            color:white;
+
+            font-size:18px;
+
+            cursor:pointer;
+
+            border-radius:8px;
+
+        }
+
+        button:hover{
+
+            background:#084298;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>AI Smart Travel Planner</h2>
+
+    <h3 align="center">Travel Booking Payment</h3>
+
+    <div class="info" id="bookingDetails">
+
+        Loading Booking...
+
+    </div>
+
+    <button onclick="payNow()">
+
+        Pay Now
+
+    </button>
+
+</div>
+
+<script>
+
+const bookingReference = new URLSearchParams(window.location.search)
+
+.get("booking_reference");
+
+let orderData = {};
+
+async function loadBooking(){
+
+    const response = await fetch(
+
+        "http://127.0.0.1:8000/api/payments/create-order",
+
+        {
+
+            method:"POST",
+
+            headers:{
+
+                "Content-Type":"application/json"
+
+            },
+
+            body:JSON.stringify({
+
+                booking_reference:bookingReference
+
+            })
+
+        }
+
+    );
+
+    orderData = await response.json();
+
+    document.getElementById("bookingDetails").innerHTML =
+
+        "<b>Booking Reference :</b> "
+
+        + orderData.booking_reference +
+
+        "<br><br><b>Amount :</b> ₹"
+
+        + orderData.amount +
+
+        "<br><br><b>Currency :</b> "
+
+        + orderData.currency;
+
+}
+
+loadBooking();
+
+function payNow(){
+
+    var options={
+
+        key:orderData.razorpay_key,
+
+        amount:orderData.amount*100,
+
+        currency:orderData.currency,
+
+        name:"AI Smart Travel Planner",
+
+        description:"Travel Booking Payment",
+
+        order_id:orderData.razorpay_order_id,
+
+        image:"https://razorpay.com/assets/razorpay-logo.svg",
+
+        prefill:{
+
+            name:"Chetan",
+
+            email:"chetan@gmail.com",
+
+            contact:"9876543210"
+
+        },
+
+        theme:{
+
+            color:"#0b5ed7"
+
+        },
+
+        handler:async function(response){
+
+            const verify = await fetch(
+
+                "http://127.0.0.1:8000/api/payments/verify",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+
+                        "Content-Type":"application/json"
+
+                    },
+
+                    body:JSON.stringify({
+
+                        booking_reference:orderData.booking_reference,
+
+                        razorpay_order_id:response.razorpay_order_id,
+
+                        razorpay_payment_id:response.razorpay_payment_id,
+
+                        razorpay_signature:response.razorpay_signature
+
+                    })
+
+                }
+
+            );
+
+            const result = await verify.json();
+
+            alert(result.message);
+
+            console.log(result);
+
+        }
+
+    };
+
+    var rzp = new Razorpay(options);
+
+    rzp.open();
+
+}
+
+</script>
+
+</body>
+
+</html>
