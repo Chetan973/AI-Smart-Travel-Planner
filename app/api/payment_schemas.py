@@ -10,11 +10,13 @@ class CreatePaymentOrderRequest(BaseModel):
 
 class CreatePaymentOrderResponse(BaseModel):
 
+    payment_reference: str
+
     booking_reference: str
 
     razorpay_order_id: str
 
-    amount: float
+    amount: int
 
     currency: str
 

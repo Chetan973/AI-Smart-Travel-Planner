@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from app.repository.user_repository import UserRepository
+from app.utils.constants import MAX_OTP_ATTEMPTS
 
 
 class OTPService:
@@ -67,13 +68,11 @@ class OTPService:
             raise ValueError("OTP expired.")
 
         if otp_entity.otp != otp:
-
             otp_entity.attempt_count += 1
+            OTPRepository.update(db, otp_entity)
 
-            OTPRepository.update(
-                db,
-                otp_entity
-            )
+            if otp_entity.attempt_count >= MAX_OTP_ATTEMPTS:
+                raise ValueError("Maximum OTP attempts exceeded. Please request a new code.")
 
             raise ValueError("Invalid OTP.")
 

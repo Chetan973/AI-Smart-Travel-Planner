@@ -64,6 +64,19 @@ class Settings(BaseSettings):
     razorpay_key_id: str
     razorpay_key_secret: str
 
+
+    # ======================================================
+    # RapidAPI
+    # ======================================================
+
+    rapid_api_key: str = "ee2f2c5017msh4dd85dc3e9fa62fp10b92djsn67a234b83ff5"
+
+    train_api_host: str = "indian-railway-irctc.p.rapidapi.com"
+
+    flight_api_host: str = "skyscanner44.p.rapidapi.com"
+
+    hotel_api_host: str = "agoda-com.p.rapidapi.com"
+
     # ======================================================
     # JWT
     # ======================================================

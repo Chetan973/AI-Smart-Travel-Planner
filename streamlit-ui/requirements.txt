@@ -1,0 +1,6 @@
+streamlit==1.47.0
+requests
+streamlit-lottie
+streamlit-option-menu
+streamlit-extras
+Pillow

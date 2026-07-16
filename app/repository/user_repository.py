@@ -6,6 +6,17 @@ from app.models import User
 class UserRepository:
 
     @staticmethod
+    def find_by_id(
+        db: Session,
+        user_id: int
+    ) -> User | None:
+        return (
+            db.query(User)
+            .filter(User.user_id == user_id)
+            .first()
+        )
+    
+    @staticmethod
     def find_by_email(
         db: Session,
         email: str
