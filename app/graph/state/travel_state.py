@@ -1,7 +1,6 @@
 from datetime import date
 from typing import Any
 
-from langchain_core.messages import BaseMessage
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
@@ -86,7 +85,10 @@ class TravelState(BaseModel):
 
     travel_mode: TravelMode | None = None
 
-    passengers: int = 1
+    passengers: int | None = None
+    budget: float | None = None
+    travel_preference: str | None = None
+    recommended_option_id: int | None = None
 
     # =====================================================
     # AI Recommendation
@@ -138,7 +140,13 @@ class TravelState(BaseModel):
     # Conversation Memory
     # =====================================================
 
-    messages: list[BaseMessage] = Field(default_factory=list)
+    # The latest user turn is kept separately so a graph invocation is one
+    # deterministic conversation turn.  A production deployment can add a
+    # message store without changing the routing contract.
+    input_message: str | None = None
+    conversation_phase: str = "IDLE"
+    requested_action: str | None = None
+    missing_fields: list[str] = Field(default_factory=list)
 
     # =====================================================
     # LangGraph Workflow

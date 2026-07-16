@@ -61,6 +61,12 @@ class TravelService:
             config=config
         )
 
+        print("=" * 60)
+        print(type(result))
+        print(result)
+        print("=" * 60)
+
+
         # Convert dict -> TravelState
         result = TravelState.model_validate(result)
 

@@ -3,23 +3,27 @@ from app.providers.base_provider import BaseProvider
 from app.providers.bus_provider import BusProvider
 from app.providers.flight_provider import FlightProvider
 from app.providers.train_provider import TrainProvider
-
+from app.providers.hotel_provider import HotelProvider
 
 class ProviderFactory:
+    # """
+    # Factory class responsible for returning the
+    # appropriate travel provider based on travel mode.
+
+    # Current Providers
+    # -----------------
+    # TRAIN  -> MakeMyTrip (Mock)
+    # BUS    -> RedBus (Mock)
+    # FLIGHT -> Agoda (Mock)
+
+    # Future
+    # ------
+    # Replace the mock providers with real Affiliate APIs
+    # without changing the rest of the application.
+    # """
+
     """
-    Factory class responsible for returning the
-    appropriate travel provider based on travel mode.
-
-    Current Providers
-    -----------------
-    TRAIN  -> MakeMyTrip (Mock)
-    BUS    -> RedBus (Mock)
-    FLIGHT -> Agoda (Mock)
-
-    Future
-    ------
-    Replace the mock providers with real Affiliate APIs
-    without changing the rest of the application.
+    Returns provider implementation based on travel mode.
     """
 
     @staticmethod
@@ -30,11 +34,16 @@ class ProviderFactory:
         if travel_mode == TravelMode.TRAIN:
             return TrainProvider()
 
-        if travel_mode == TravelMode.BUS:
+        elif travel_mode == TravelMode.BUS:
             return BusProvider()
 
-        if travel_mode == TravelMode.FLIGHT:
+        elif travel_mode == TravelMode.FLIGHT:
             return FlightProvider()
+        
+        elif travel_mode == TravelMode.HOTEL:
+            return HotelProvider()
+        
+        
 
         raise ValueError(
             f"Unsupported travel mode: {travel_mode}"

@@ -78,3 +78,10 @@ rich>=14.0.0
 # ==========================================
 pytest>=8.4.0
 pytest-asyncio>=1.1.0
+
+streamlit==1.47.0
+requests
+streamlit-lottie
+streamlit-option-menu
+streamlit-extras
+Pillow

@@ -8,8 +8,6 @@ from sqlalchemy import String
 from sqlalchemy.sql import func
 
 from app.database import Base
-from app.enums.payment_status import PaymentStatus
-from sqlalchemy import Enum
 
 
 class Payment(Base):

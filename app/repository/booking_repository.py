@@ -88,17 +88,3 @@ class BookingRepository:
         db.delete(booking)
 
         db.commit()
-
-    # @staticmethod
-    # def find_by_reference(
-    #     db: Session,
-    #     booking_reference: str
-    # ) -> Booking | None:
-
-    #     return (
-    #         db.query(Booking)
-    #         .filter(
-    #             Booking.booking_reference == booking_reference
-    #         )
-    #         .first()
-    #     )

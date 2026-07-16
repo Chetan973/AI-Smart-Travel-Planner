@@ -19,6 +19,7 @@ import secrets
 import string
 from datetime import datetime
 
+from app.models import booking
 from app.utils.constants import BOOKING_PREFIX
 
 
@@ -68,9 +69,9 @@ class SecurityUtils:
 
         date = datetime.now().strftime("%Y%m%d")
 
-        reference = SecurityUtils.generate_reference(8)
+        booking.booking_reference = SecurityUtils.generate_booking_id()
 
-        return f"{BOOKING_PREFIX}-{date}-{reference}"
+        return f"{BOOKING_PREFIX}-{date}-{booking.booking_reference}"
 
     @staticmethod
     def generate_session_token(length: int = 64) -> str:
