@@ -35,9 +35,9 @@ class BookingResponse(BaseModel):
 
     journey_date: date
 
-    departure_time: str
+    departure_time: str | None
 
-    arrival_time: str
+    arrival_time: str | None
 
     passengers: int
 
@@ -60,7 +60,7 @@ class BookingHistoryResponse(BaseModel):
 
     transport_name: str
 
-    transport_number: str
+    transport_number: str | None
 
     source: str
 
@@ -68,9 +68,9 @@ class BookingHistoryResponse(BaseModel):
 
     journey_date: date
 
-    departure_time: str
+    departure_time: str | None
 
-    arrival_time: str
+    arrival_time: str | None
 
     passengers: int
 

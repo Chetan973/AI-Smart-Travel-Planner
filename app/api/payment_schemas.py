@@ -16,7 +16,7 @@ class CreatePaymentOrderResponse(BaseModel):
 
     razorpay_order_id: str
 
-    amount: int
+    amount: float
 
     currency: str
 

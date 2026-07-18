@@ -2,7 +2,12 @@
 import os
 import traceback
 from sqlalchemy.orm import Session
-import razorpay
+try:
+    import razorpay
+    from razorpay.errors import SignatureVerificationError
+except ImportError:  # Razorpay is an optional runtime integration.
+    razorpay = None
+    SignatureVerificationError = Exception
 
 from app.api.payment_schemas import (
     CreatePaymentOrderRequest,
@@ -11,7 +16,6 @@ from app.api.payment_schemas import (
     VerifyPaymentResponse,
 )
 from app.enums.booking_status import BookingStatus
-from razorpay.errors import SignatureVerificationError
 from app.config import settings
 from app.models.payment import Payment
 from app.repository.booking_repository import BookingRepository
@@ -20,7 +24,18 @@ from app.repository.user_repository import UserRepository
 from app.services.email_service import EmailService
 
 
+class PaymentFeatureDisabled(ValueError):
+    """Raised when a payment action is requested without Razorpay configuration."""
+
+
 class PaymentService:
+
+    @staticmethod
+    def ensure_enabled() -> None:
+        if not settings.razorpay_enabled or razorpay is None:
+            raise PaymentFeatureDisabled(
+                "Payment module is disabled. Configure Razorpay credentials to enable online booking."
+            )
 
     @staticmethod
     def get_status(db: Session, booking_reference: str) -> VerifyPaymentResponse:
@@ -41,6 +56,7 @@ class PaymentService:
         request: CreatePaymentOrderRequest
     ) -> CreatePaymentOrderResponse:
 
+        PaymentService.ensure_enabled()
         booking = BookingRepository.find_by_booking_reference(db, request.booking_reference)
         if booking is None:
             raise ValueError("Booking not found.")
@@ -98,6 +114,7 @@ class PaymentService:
         request: VerifyPaymentRequest
     ) -> VerifyPaymentResponse:
 
+        PaymentService.ensure_enabled()
         payment = PaymentRepository.find_by_order_id(db, request.razorpay_order_id)
         if payment is None:
             raise ValueError("Payment not found.")
@@ -152,7 +169,7 @@ class PaymentService:
         """
         Bypasses the Razorpay gateway and forces payment status to SUCCESS for demonstration purposes.
         """
-        demo_mode_enabled = os.getenv("DEMO_MODE_ENABLED", "True").lower() == "true"
+        demo_mode_enabled = settings.demo_mode_enabled
 
         if not demo_mode_enabled:
             raise ValueError("Demo mode is disabled. Please complete standard Razorpay payment.")

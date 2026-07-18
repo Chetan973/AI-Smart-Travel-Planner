@@ -17,53 +17,15 @@ router = APIRouter(
     tags=["Bookings"]
 )
 
-
-@router.post(
-    "/create",
-    response_model=BookingResponse
-)
-def create_booking(
-    request: CreateBookingRequest,
-    db: Session = Depends(get_db)
-):
-
-    try:
-
-        return BookingService.create_booking(
-            db,
-            request
-        )
-
-    except ValueError as ex:
-
-        raise HTTPException(
-            status_code=400,
-            detail=str(ex)
-        )
-
-    except Exception as ex:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(ex)
-        )
-
 @router.get(
     "/user/{user_id}",
     response_model=List[BookingHistoryResponse]
 )
 def get_user_bookings(
-
     user_id: int,
-
     db: Session = Depends(get_db)
-
 ):
-
     return BookingService.get_user_bookings(
-
         db,
-
         user_id
-
     )

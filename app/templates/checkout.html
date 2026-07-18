@@ -55,7 +55,6 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>AI Smart Travel Planner</h2>
     <h3 align="center">Secure Travel Checkout</h3>
@@ -65,7 +64,6 @@
     </div>
     
     <div id="errorMessage" class="error"></div>
-
     <button id="payBtn" onclick="payNow()" disabled>Loading...</button>
 </div>
 
@@ -73,52 +71,45 @@
     const urlParams = new URLSearchParams(window.location.search);
     const bookingReference = urlParams.get("booking_reference");
     
-    // Fallback to empty strings if not provided in URL
     const prefillName = urlParams.get("name") || "";
     const prefillEmail = urlParams.get("email") || "";
     const prefillContact = urlParams.get("contact") || "";
-
     let orderData = {};
+
     const payBtn = document.getElementById("payBtn");
     const detailsDiv = document.getElementById("bookingDetails");
     const errorDiv = document.getElementById("errorMessage");
 
     async function loadBooking() {
-        // 1. Strict validation of the URL parameter
         if (!bookingReference || bookingReference === "undefined" || bookingReference === "null") {
             detailsDiv.innerHTML = "<b>Payment Initialization Failed</b>";
             errorDiv.innerText = "Error: Invalid or missing booking reference.";
             payBtn.innerText = "Unavailable";
             return;
         }
-
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/payments/create-order", {
+            // FIX: Changed from absolute URL to Relative URL to bypass CORS
+            const response = await fetch("/api/payments/create-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ booking_reference: bookingReference })
             });
 
-            // 2. Read the body EXACTLY ONCE to prevent the "stream already read" crash
             const responseData = await response.json();
 
-            // 3. Check if the backend threw an error (like 400 or 500)
             if (!response.ok) {
                 throw new Error(responseData.detail || "Failed to initialize payment order.");
             }
 
             orderData = responseData;
 
-            // 4. Populate the UI securely
             detailsDiv.innerHTML = `
                 <b>Booking Reference :</b> ${orderData.booking_reference}<br><br>
                 <b>Total Amount :</b> ₹${orderData.amount}<br><br>
                 <b>Currency :</b> ${orderData.currency}
             `;
-
             payBtn.innerText = "Pay Now";
             payBtn.disabled = false;
-
         } catch (error) {
             detailsDiv.innerHTML = "<b>Payment Initialization Failed</b>";
             errorDiv.innerText = error.message;
@@ -135,7 +126,7 @@
 
         var options = {
             key: orderData.razorpay_key,
-            amount: orderData.amount * 100, // Razorpay expects amount in paise
+            amount: orderData.amount * 100,
             currency: orderData.currency,
             name: "AI Smart Travel Planner",
             description: "Travel Booking Checkout",
@@ -151,7 +142,6 @@
             },
             modal: {
                 ondismiss: function() {
-                    // Re-enable button if user closes Razorpay without paying
                     payBtn.innerText = "Pay Now";
                     payBtn.disabled = false;
                 }
@@ -160,7 +150,8 @@
                 try {
                     payBtn.innerText = "Verifying Payment...";
                     
-                    const verify = await fetch("http://127.0.0.1:8000/api/payments/verify", {
+                    // FIX: Changed from absolute URL to Relative URL to bypass CORS
+                    const verify = await fetch("/api/payments/verify", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -177,7 +168,6 @@
                         throw new Error(resultData.detail || "Signature verification failed.");
                     }
 
-                    // Success -> Redirect back
                     window.location.href = "/payment-success" + 
                         "?booking_reference=" + orderData.booking_reference +
                         "&status=" + resultData.payment_status + 

@@ -73,6 +73,14 @@ streamlit>=1.47.0
 # ==========================================
 rich>=14.0.0
 
+langgraph-checkpoint-postgres 
+langgraph-checkpoint-redis 
+psycopg-pool 
+psycopg[binary] redis
+google-search-results
+google-api-python-client
+langchain-tavily
+
 # ==========================================
 # Testing
 # ==========================================

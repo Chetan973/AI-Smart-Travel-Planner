@@ -1,8 +1,10 @@
 # streamlit-ui/ui/payment_ui.py
 import streamlit as st
-
+import requests
 from services.api_client import PaymentAPI
 
+# Base URL for direct backend calls if PaymentAPI doesn't have create_order
+BASE_URL = "http://127.0.0.1:8000/api"
 
 def show_payment_page():
     booking = st.session_state.get("booking_response")
@@ -11,6 +13,37 @@ def show_payment_page():
         return
 
     st.title("Secure payment")
+    
+    # ----------------------------------------------------
+    # Smart Check: Is Razorpay Disabled?
+    # ----------------------------------------------------
+    if "payment_initialized" not in st.session_state:
+        with st.spinner("Initializing secure gateway..."):
+            try:
+                # Ask the backend to create an order
+                resp = requests.post(
+                    f"{BASE_URL}/payments/create-order",
+                    json={"booking_reference": booking["booking_reference"]}
+                )
+                resp.raise_for_status()
+                order_data = resp.json()
+                
+                # If backend says skipped, bypass everything!
+                if order_data.get("razorpay_order_id") == "skipped_no_config":
+                    st.success("✅ Payment module is disabled. Booking confirmed automatically!")
+                    st.info(order_data.get("message", "Proceeding securely without payment."))
+                    
+                    st.session_state.payment_response = {"payment_status": "captured (No-Config Bypass)"}
+                    st.session_state.page = "success"
+                    st.rerun()
+                    return
+                
+                # Otherwise, mark as initialized and proceed normally
+                st.session_state.payment_initialized = True
+            except Exception as exc:
+                st.error(f"Failed to initialize payment gateway: {exc}")
+                return
+
     st.success("Your booking is reserved. Complete payment to confirm it.")
     st.metric("Booking reference", booking["booking_reference"])
     st.metric("Amount", f"₹ {booking['total_amount']}")
@@ -31,11 +64,9 @@ def show_payment_page():
     if st.button("Skip Payment (Demo Bypass)", use_container_width=True):
         try:
             with st.spinner("Authorizing demo mode bypass..."):
-                # Fetch email from passenger state, fallback to a dummy if missing
                 passenger = st.session_state.get("passenger", {})
                 email = passenger.get("email", "demo@example.com")
                 
-                # Call the new bypass endpoint
                 bypass_resp = PaymentAPI.demo_bypass({
                     "booking_reference": booking["booking_reference"],
                     "email": email
@@ -43,7 +74,6 @@ def show_payment_page():
 
                 if bypass_resp.get("status") == "SUCCESS":
                     st.success("Bypass authorized!")
-                    # Mock the payment state so success_ui.py renders correctly
                     st.session_state.payment_response = {"payment_status": "captured (Demo Mode)"}
                     st.session_state.page = "success"
                     st.rerun()
@@ -57,6 +87,7 @@ def show_payment_page():
     left, right = st.columns(2)
     with left:
         if st.button("Back to booking", use_container_width=True):
+            st.session_state.pop("payment_initialized", None) # Clear init state if going back
             st.session_state.page = "booking"
             st.rerun()
     with right:
