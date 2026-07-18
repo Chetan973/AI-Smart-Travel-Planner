@@ -1,111 +1,55 @@
+# app/config/settings.py
 from functools import lru_cache
-
-from pydantic import Field
+from pathlib import Path
+from typing import Literal
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
-    """
-    Application Settings
-    Automatically loads values from .env
-    """
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        extra="ignore"
+        extra="ignore",
     )
-
-    # ======================================================
-    # Application
-    # ======================================================
-
-    app_name: str = Field(default="AI Smart Travel Planner")
-    app_version: str = Field(default="1.0.0")
-    environment: str = Field(default="development")
-    debug: bool = Field(default=True)
-
-    # ======================================================
-    # PostgreSQL
-    # ======================================================
-
-    database_url: str
-
-    # ======================================================
-    # Google Gemini
-    # ======================================================
-
-    google_api_key: str
-
-    # ======================================================
-    # Ollama
-    # ======================================================
-
-    ollama_base_url: str
-    ollama_model: str
-
-    # ======================================================
-    # Redis
-    # ======================================================
-
-    redis_url: str
-
-    # ======================================================
-    # SMTP
-    # ======================================================
-
-    smtp_email: str
-    smtp_password: str
-
-    # ======================================================
-    # Razorpay
-    # ======================================================
-
-    razorpay_key_id: str
-    razorpay_key_secret: str
-
-
-    # ======================================================
-    # RapidAPI
-    # ======================================================
-
-    rapid_api_key: str = "ee2f2c5017msh4dd85dc3e9fa62fp10b92djsn67a234b83ff5"
-
-    train_api_host: str = "indian-railway-irctc.p.rapidapi.com"
-
-    flight_api_host: str = "skyscanner44.p.rapidapi.com"
-
-    hotel_api_host: str = "agoda-com.p.rapidapi.com"
-
-    # ======================================================
-    # JWT
-    # ======================================================
-
-    jwt_secret: str
-    jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 60
-
-    # ======================================================
-    # LangSmith
-    # ======================================================
-
-    langsmith_api_key: str | None = None
-    langchain_tracing_v2: bool = False
-    langchain_project: str = "AI-Smart-Travel-Planner"
-
-    # ======================================================
-    # Logging
-    # ======================================================
-
+    
+    app_name: str = "AI Smart Travel Planner"
+    app_version: str = "1.0.0"
+    environment: str = "development"
+    debug: bool = True
     log_level: str = "INFO"
+    
+    # Database Configuration (Credentials removed, loaded from .env)
+    database_url: str = Field(default="postgresql+psycopg://postgres:postgres@localhost:5432/travel_planner_db", validation_alias=AliasChoices("DATABASE_URL"))
+    checkpoint_database_url: str = Field(default="postgresql+psycopg://postgres:postgres@localhost:5432/travel_planner_db", validation_alias=AliasChoices("CHECKPOINT_DATABASE_URL"))
+    checkpointer_backend: Literal["sqlite", "postgres", "redis"] = "postgres"
+    checkpointer_type: str = "postgres"
+    
+    # API Credentials (Secrets removed, loaded from .env)
+    google_api_key: str | None = Field(default=None, validation_alias=AliasChoices("GOOGLE_API_KEY"))
+    google_search_api_key: str | None = Field(default=None, validation_alias=AliasChoices("GOOGLE_SEARCH_API_KEY"))
+    google_search_engine_id: str | None = Field(default=None, validation_alias=AliasChoices("GOOGLE_SEARCH_ENGINE_ID"))
+    serper_api_key: str | None = Field(default=None, validation_alias=AliasChoices("SERPER_API_KEY"))
+    
+    # SMTP Email Configuration
+    smtp_email: str | None = Field(default=None, validation_alias=AliasChoices("SMTP_EMAIL"))
+    smtp_password: str | None = Field(default=None, validation_alias=AliasChoices("SMTP_PASSWORD"))
+    
+    # Razorpay Integration Gateway
+    razorpay_key_id: str | None = Field(default=None, validation_alias=AliasChoices("RAZORPAY_KEY_ID"))
+    razorpay_key_secret: str | None = Field(default=None, validation_alias=AliasChoices("RAZORPAY_KEY_SECRET"))
+    demo_mode_enabled: bool = True
 
+    @property
+    def razorpay_enabled(self) -> bool:
+        """Isolated feature flag ensuring app continues running if credentials are absent."""
+        return bool(self.razorpay_key_id and self.razorpay_key_secret and len(self.razorpay_key_id.strip()) > 0)
+
+    @property
+    def effective_checkpoint_backend(self) -> str:
+        return self.checkpointer_type or "postgres"
 
 @lru_cache
 def get_settings() -> Settings:
-    """
-    Returns singleton settings instance.
-    """
     return Settings()
-
 
 settings = get_settings()

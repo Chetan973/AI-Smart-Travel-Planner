@@ -1,20 +1,32 @@
 # streamlit-ui/services/api_client.py
 import requests
+import streamlit as st
 
-BASE_URL = "http://127.0.0.1:8000"
+# (Keep your existing base URL configuration)
+BASE_URL = "http://127.0.0.1:8000/api"
+ROOT_URL = "http://127.0.0.1:8000"
 
-
-class ChatAPI:
+class APIClient:
+    
     @staticmethod
-    def message(session_id: str, message: str):
-        response = requests.post(
-            f"{BASE_URL}/api/chat/message",
-            json={"session_id": session_id, "message": message},
-            timeout=30,
-        )
-        response.raise_for_status()
-        return response.json()
-
+    def send_chat_message(session_id: str, message: str) -> dict:
+        url = "http://127.0.0.1:8000/api/chat/message"
+        
+        payload = {
+            "session_id": session_id, 
+            "message": message
+        }
+        
+        try:
+            response = requests.post(url, json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                raise Exception(f"FastAPI Validation Error: {response.text}")
+                
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Network failure: {str(e)}")
 
 class TravelAPI:
 
@@ -99,7 +111,7 @@ class PaymentAPI:
     def checkout_url(booking_reference: str):
 
         return (
-            f"{BASE_URL}/checkout"
+            f"{ROOT_URL}/checkout"
             f"?booking_reference={booking_reference}"
         )
 
@@ -140,4 +152,10 @@ class OTPAPI:
 
         response.raise_for_status()
 
+        return response.json()
+
+    @staticmethod
+    def configuration() -> dict:
+        response = requests.get(f"{BASE_URL}/payments/configuration", timeout=15)
+        response.raise_for_status()
         return response.json()

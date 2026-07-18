@@ -1,19 +1,24 @@
-from typing import Any
-
 from pydantic import BaseModel, Field
-
+from typing import List, Optional
 
 class ChatRequest(BaseModel):
-    """One message in a persistent travel-planning conversation."""
-
-    session_id: str = Field(min_length=1, max_length=100)
-    message: str = Field(min_length=1, max_length=2_000)
-
+    session_id: str = Field(..., description="Unique identifier for the LangGraph memory thread")
+    message: str = Field(..., description="The user's natural language input")
 
 class ChatResponse(BaseModel):
     session_id: str
-    message: str
-    phase: str
-    missing_fields: list[str] = Field(default_factory=list)
-    travel_details: dict[str, Any] = Field(default_factory=dict)
-    travel_options: list[dict[str, Any]] = Field(default_factory=list)
+    ai_response: str
+    missing_fields: List[str] = Field(default_factory=list)
+    
+    # ADD THIS: Allow the API to send travel options to the frontend
+    travel_options: List[dict] = Field(default_factory=list)
+    
+    source: Optional[str] = None
+    destination: Optional[str] = None
+    journey_date: Optional[str] = None
+    budget: Optional[float] = None
+    preference: Optional[str] = None
+    preferences: List[str] = Field(default_factory=list)
+    search_error: Optional[str] = None
+    
+    options_ready: bool = False

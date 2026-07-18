@@ -1,29 +1,27 @@
 import streamlit as st
+from services.api_client import APIClient
 
 
-def show_chat():
-    """Render the chat transcript and return one new user message, if any."""
-    if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "content": (
-                    "Hi! I’m your AI travel planner. Tell me where you would like "
-                    "to go, or say ‘I want to book a trip’."
-                ),
+def handle_user_input():
+    user_msg = st.session_state.chat_input
+    if user_msg:
+        # 1. Show user message
+        st.session_state.messages.append({"role": "user", "content": user_msg})
+        
+        # 2. Call our updated API
+        result = APIClient.send_chat_message(st.session_state.session_id, user_msg)
+        
+        # 3. Show AI response (which now contains beautiful Markdown itineraries from Gemini)
+        st.session_state.messages.append({"role": "assistant", "content": result.get("ai_response")})
+        
+        # 4. SMART FLOW: If the agent successfully gathered everything and searched, unlock booking!
+        if result.get("options_ready"):
+            st.success("✨ Live travel options retrieved! You can now proceed to book.")
+            # Save the extracted data to session state for the booking form
+            st.session_state.booking_data = {
+                "source": result.get("source"),
+                "destination": result.get("destination"),
+                "journey_date": result.get("journey_date")
             }
-        ]
-
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    prompt = st.chat_input("Ask me anything..." \
-                        "Examples" \
-                        "• Book Bangalore → Delhi tomorrow" \
-                        "• Cheapest train to Mysore" \
-                        "• Weekend trip to Goa" \
-                        "• Find hotels in Ooty")
-    if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
-    return prompt
+            # Trigger your existing UI state change to move to the booking screen
+            st.session_state.current_page = "booking"

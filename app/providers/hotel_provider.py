@@ -1,14 +1,13 @@
 from decimal import Decimal
-
 from app.dto.travel_option import TravelOption
 from app.enums.provider_type import ProviderType
 from app.providers.base_provider import BaseProvider
 
-
 class HotelProvider(BaseProvider):
-    """Mock hotel provider kept compatible with the common provider contract."""
+    def get_mode(self) -> str:
+        return "HOTEL"
 
-    def search(self, source: str, destination: str, journey_date: str) -> list[TravelOption]:
+    def get_mock_data(self, source: str, destination: str, journey_date: str) -> list[TravelOption]:
         return [
             TravelOption(
                 provider=ProviderType.AGODA.value,

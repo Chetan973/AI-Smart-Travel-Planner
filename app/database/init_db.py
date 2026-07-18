@@ -1,15 +1,11 @@
-from app.database import Base
-from app.database import engine
+"""Database schema initialization used by app startup and manual setup."""
 
-# Import all models
-from app.models import *
+from app.database import Base, engine
+from app import models  # noqa: F401 - registers SQLAlchemy metadata
 
 
-def create_tables():
-
+def create_tables() -> None:
     Base.metadata.create_all(bind=engine)
-
-    print("Database tables created successfully.")
 
 
 if __name__ == "__main__":

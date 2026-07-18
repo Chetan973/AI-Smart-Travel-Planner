@@ -52,7 +52,7 @@ def show_otp_page():
                     st.session_state.booking_response = BookingAPI.create(
                         {
                             "user_id": st.session_state.otp_user["user_id"], 
-                            "session_id": st.session_state.chat_session_id, 
+                            "session_id": st.session_state.session_id,
                             "option_id": option["option_id"], 
                             "passengers": context.get("passengers") or 1
                         }

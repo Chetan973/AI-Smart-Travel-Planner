@@ -11,12 +11,21 @@ from app.api.payment_schemas import (
     VerifyPaymentResponse,
 )
 from app.database import get_db
-from app.services.payment_service import PaymentService
+from app.config import settings
+from app.services.payment_service import PaymentFeatureDisabled, PaymentService
 
 router = APIRouter(
     prefix="/api/payments",
     tags=["Payments"]
 )
+
+
+@router.get("/configuration")
+def payment_configuration() -> dict:
+    return {
+        "enabled": settings.razorpay_enabled,
+        "message": "Online payment is enabled." if settings.razorpay_enabled else "Payment module is disabled. Configure Razorpay credentials to enable online booking.",
+    }
 
 # Schema for the Demo Bypass Request
 class DemoBypassRequest(BaseModel):
@@ -33,6 +42,8 @@ def create_payment_order(
 ):
     try:
         return PaymentService.create_order(db, request)
+    except PaymentFeatureDisabled as ex:
+        raise HTTPException(status_code=503, detail=str(ex)) from ex
     except ValueError as ex:
         raise HTTPException(status_code=400, detail=str(ex))
     except Exception as ex:
@@ -48,6 +59,8 @@ def verify_payment(
 ):
     try:
         return PaymentService.verify_payment(db, request)
+    except PaymentFeatureDisabled as ex:
+        raise HTTPException(status_code=503, detail=str(ex)) from ex
     except ValueError as ex:
         raise HTTPException(status_code=400, detail=str(ex))
     except Exception as ex:

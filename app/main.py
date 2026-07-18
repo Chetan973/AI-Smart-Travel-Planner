@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from sqlalchemy import text
@@ -9,24 +10,27 @@ from app.api.payment_routes import router as payment_router
 from app.api.routes import router as user_router
 from app.api.view_routes import router as view_router
 from app.config import settings
-from app.database import engine
+from app.core.logging import configure_logging
+from app.database import Base, engine
+from app.graph.checkpoints.factory import CheckpointerFactory
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    print("=" * 60)
-    print(settings.app_name)
-    print("=" * 60)
+async def lifespan(application: FastAPI):
+    configure_logging()
     try:
+        Base.metadata.create_all(bind=engine)
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-        print("PostgreSQL connected successfully")
+        application.state.database_ready = True
+        logger.info("Database connected and schema initialized")
     except Exception as exc:
-        print("Database connection failed")
-        print(exc)
-    print("FastAPI started successfully")
+        application.state.database_ready = False
+        logger.exception("Database initialization failed: %s", exc)
     yield
-    print("Application shutdown")
+    CheckpointerFactory.close()
 
 
 app = FastAPI(title=settings.app_name, version=settings.app_version, lifespan=lifespan)
@@ -44,4 +48,12 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"status": "UP", "database": "Connected", "application": settings.app_name, "version": settings.app_version}
+    return {
+        "status": "UP",
+        "database": "connected" if getattr(app.state, "database_ready", False) else "unavailable",
+        "checkpointer": settings.effective_checkpoint_backend,
+        "live_search_configured": settings.search_enabled,
+        "payments_enabled": settings.razorpay_enabled,
+        "application": settings.app_name,
+        "version": settings.app_version,
+    }
